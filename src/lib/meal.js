@@ -95,12 +95,15 @@ export async function generateMealPlan(profile, options = {}) {
   const avoidDishes = Array.isArray(options.avoidDishes)
     ? options.avoidDishes
     : [];
+  const avoidThemes = Array.isArray(options.avoidThemes)
+    ? options.avoidThemes
+    : [];
   let res;
   try {
     res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile, avoidDishes }),
+      body: JSON.stringify({ profile, avoidDishes, avoidThemes }),
     });
   } catch (err) {
     throw new Error(
@@ -122,5 +125,6 @@ export async function generateMealPlan(profile, options = {}) {
   const normalized = normalizePlan(data.plan, profile);
   normalized.searchNote = data.searchNote || "";
   normalized.searchProvider = data.searchProvider || null;
+  normalized.themes = Array.isArray(data.themes) ? data.themes : [];
   return normalized;
 }

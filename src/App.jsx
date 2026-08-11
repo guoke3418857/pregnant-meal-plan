@@ -257,7 +257,12 @@ export default function App() {
     try {
       const avoidDishes =
         avoidPrevious && plan ? extractDishNames(plan) : [];
-      const result = await generateMealPlan(profile, { avoidDishes });
+      const avoidThemes =
+        avoidPrevious && plan?.themes?.length ? plan.themes : [];
+      const result = await generateMealPlan(profile, {
+        avoidDishes,
+        avoidThemes,
+      });
       setPlan(result);
       setPlanProfile(profile);
     } catch (err) {
