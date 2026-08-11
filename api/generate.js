@@ -40,8 +40,20 @@ export default async function handler(req, res) {
       return;
     }
 
-    const plan = await generateWithDeepSeek(apiKey, body.profile);
-    res.status(200).json({ ok: true, plan, source: "deepseek" });
+    const { plan, searchNote, searchProvider } = await generateWithDeepSeek(
+      apiKey,
+      body.profile,
+      {
+        avoidDishes: Array.isArray(body.avoidDishes) ? body.avoidDishes : [],
+      }
+    );
+    res.status(200).json({
+      ok: true,
+      plan,
+      searchNote,
+      searchProvider,
+      source: "deepseek",
+    });
   } catch (err) {
     if (err instanceof SyntaxError) {
       res.status(400).json({ error: "请求体不是合法 JSON" });

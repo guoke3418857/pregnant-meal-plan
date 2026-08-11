@@ -6,6 +6,7 @@ import GenerateHero from "./components/GenerateHero.jsx";
 import MealResult from "./components/MealResult.jsx";
 import { createSupabase, loadPublicConfig } from "./lib/supabase.js";
 import {
+  extractDishNames,
   generateMealPlan,
   isProfileComplete,
   profileFromRow,
@@ -245,7 +246,7 @@ export default function App() {
     }
   }
 
-  async function handleQuickGenerate() {
+  async function handleQuickGenerate({ avoidPrevious = false } = {}) {
     setQuickError("");
     if (!isProfileComplete(profile)) {
       setQuickError("请先完善孕期资料");
@@ -254,7 +255,9 @@ export default function App() {
     }
     setBusy(true);
     try {
-      const result = await generateMealPlan(profile);
+      const avoidDishes =
+        avoidPrevious && plan ? extractDishNames(plan) : [];
+      const result = await generateMealPlan(profile, { avoidDishes });
       setPlan(result);
       setPlanProfile(profile);
     } catch (err) {
@@ -308,7 +311,7 @@ export default function App() {
               profile={profile}
               busy={busy}
               error={quickError}
-              onGenerate={handleQuickGenerate}
+              onGenerate={() => handleQuickGenerate({ avoidPrevious: false })}
               onEditProfile={() => {
                 setFormError("");
                 setEditing(true);
@@ -319,7 +322,7 @@ export default function App() {
                 plan={plan}
                 profile={planProfile}
                 busy={busy}
-                onRegen={handleQuickGenerate}
+                onRegen={() => handleQuickGenerate({ avoidPrevious: true })}
               />
             ) : null}
           </>

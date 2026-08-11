@@ -83,13 +83,24 @@ export function normalizePlan(plan, profile) {
   };
 }
 
-export async function generateMealPlan(profile) {
+export function extractDishNames(plan) {
+  if (!plan?.meals?.length) return [];
+  return plan.meals
+    .map((m) => m.item?.name || m.name || "")
+    .map((n) => String(n).trim())
+    .filter(Boolean);
+}
+
+export async function generateMealPlan(profile, options = {}) {
+  const avoidDishes = Array.isArray(options.avoidDishes)
+    ? options.avoidDishes
+    : [];
   let res;
   try {
     res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile }),
+      body: JSON.stringify({ profile, avoidDishes }),
     });
   } catch (err) {
     throw new Error(
@@ -108,5 +119,8 @@ export async function generateMealPlan(profile) {
     throw new Error(data.error || `生成失败（${res.status}）`);
   }
 
-  return normalizePlan(data.plan, profile);
+  const normalized = normalizePlan(data.plan, profile);
+  normalized.searchNote = data.searchNote || "";
+  normalized.searchProvider = data.searchProvider || null;
+  return normalized;
 }

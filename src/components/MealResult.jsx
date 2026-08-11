@@ -17,7 +17,9 @@ export default function MealResult({ plan, profile, onRegen, busy }) {
     <section className="panel panel--result" aria-live="polite">
       <div className="result-head">
         <div>
-          <p className="eyebrow">DeepSeek 生成</p>
+          <p className="eyebrow">
+            {plan.searchNote ? plan.searchNote : "DeepSeek 生成"}
+          </p>
           <h2 className="panel-title">
             孕{profile.week}周 · BMI {t.bmi} · 一日食谱
           </h2>

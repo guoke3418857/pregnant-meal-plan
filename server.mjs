@@ -13,6 +13,7 @@ import {
   MODEL,
 } from "./lib/deepseek.js";
 import { getPublicConfig } from "./lib/public-config.js";
+import { getSearchProvider } from "./lib/web-search.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -66,8 +67,22 @@ app.post("/api/generate", async (req, res) => {
       res.status(400).json({ error: "缺少孕妇信息 profile" });
       return;
     }
-    const plan = await generateWithDeepSeek(apiKey, req.body.profile);
-    res.json({ ok: true, plan, source: "deepseek" });
+    const { plan, searchNote, searchProvider } = await generateWithDeepSeek(
+      apiKey,
+      req.body.profile,
+      {
+        avoidDishes: Array.isArray(req.body.avoidDishes)
+          ? req.body.avoidDishes
+          : [],
+      }
+    );
+    res.json({
+      ok: true,
+      plan,
+      searchNote,
+      searchProvider,
+      source: "deepseek",
+    });
   } catch (err) {
     const { status, message } = formatUpstreamError(err);
     res.status(status).json({ error: message });
@@ -98,5 +113,13 @@ app.listen(PORT, "127.0.0.1", () => {
     cfg.configured
       ? "已检测到 Supabase 公开配置"
       : "未检测到 SUPABASE_URL / SUPABASE_ANON_KEY"
+  );
+  const searchProvider = getSearchProvider();
+  console.log(
+    searchProvider
+      ? `已启用联网搜索：${searchProvider}${
+          searchProvider === "duckduckgo" ? "（免费，无需 Key）" : ""
+        }`
+      : "联网搜索已关闭（WEB_SEARCH_PROVIDER=off）"
   );
 });
