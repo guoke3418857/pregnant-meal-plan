@@ -126,5 +126,6 @@ export async function generateMealPlan(profile, options = {}) {
   normalized.searchNote = data.searchNote || "";
   normalized.searchProvider = data.searchProvider || null;
   normalized.themes = Array.isArray(data.themes) ? data.themes : [];
+  normalized.searchDebug = data.searchDebug || null;
   return normalized;
 }

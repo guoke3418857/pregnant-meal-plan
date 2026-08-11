@@ -67,24 +67,22 @@ app.post("/api/generate", async (req, res) => {
       res.status(400).json({ error: "缺少孕妇信息 profile" });
       return;
     }
-    const { plan, searchNote, searchProvider, themes } = await generateWithDeepSeek(
-      apiKey,
-      req.body.profile,
-      {
+    const { plan, searchNote, searchProvider, themes, searchDebug } =
+      await generateWithDeepSeek(apiKey, req.body.profile, {
         avoidDishes: Array.isArray(req.body.avoidDishes)
           ? req.body.avoidDishes
           : [],
         avoidThemes: Array.isArray(req.body.avoidThemes)
           ? req.body.avoidThemes
           : [],
-      }
-    );
+      });
     res.json({
       ok: true,
       plan,
       searchNote,
       searchProvider,
       themes: themes || [],
+      searchDebug: searchDebug || null,
       source: "deepseek",
     });
   } catch (err) {

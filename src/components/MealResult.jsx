@@ -85,6 +85,16 @@ export default function MealResult({ plan, profile, onRegen, busy }) {
       <p className="disclaimer">
         本工具由 AI 生成，仅供日常参考，不构成医疗建议。特殊体质、妊娠并发症或医嘱饮食请遵从医生/营养师指导。
       </p>
+
+      {plan.searchDebug ? (
+        <details className="search-debug">
+          <summary>联网搜索诊断（排查本地有结果 / 远端无结果）</summary>
+          <p className="search-debug-summary">{plan.searchDebug.summary}</p>
+          <pre className="search-debug-pre">
+            {JSON.stringify(plan.searchDebug, null, 2)}
+          </pre>
+        </details>
+      ) : null}
     </section>
   );
 }

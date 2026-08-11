@@ -40,20 +40,18 @@ export default async function handler(req, res) {
       return;
     }
 
-    const { plan, searchNote, searchProvider, themes } = await generateWithDeepSeek(
-      apiKey,
-      body.profile,
-      {
+    const { plan, searchNote, searchProvider, themes, searchDebug } =
+      await generateWithDeepSeek(apiKey, body.profile, {
         avoidDishes: Array.isArray(body.avoidDishes) ? body.avoidDishes : [],
         avoidThemes: Array.isArray(body.avoidThemes) ? body.avoidThemes : [],
-      }
-    );
+      });
     res.status(200).json({
       ok: true,
       plan,
       searchNote,
       searchProvider,
       themes: themes || [],
+      searchDebug: searchDebug || null,
       source: "deepseek",
     });
   } catch (err) {
