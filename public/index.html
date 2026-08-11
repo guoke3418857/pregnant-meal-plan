@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>安孕食谱 · AI 每日营养计划</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orb bg-orb--a" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--b" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">安孕食谱</span>
+    </div>
+    <p class="brand-tag">DeepSeek 按身体数据定制今日一餐一餐</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel--form" aria-labelledby="form-title">
+      <h1 id="form-title" class="panel-title">填写孕期信息</h1>
+      <p class="panel-desc">填写信息后由后端调用 DeepSeek 生成专属食谱。线上部署时 Key 配在服务器环境变量中。</p>
+
+      <form id="profile-form" class="form" novalidate>
+        <details class="api-box" id="api-box">
+          <summary>高级选项 · 自备 API Key（可选）</summary>
+          <label class="field">
+            <span>DeepSeek API Key</span>
+            <div class="key-row">
+              <input
+                type="password"
+                name="apiKey"
+                id="api-key"
+                placeholder="一般无需填写；本地调试可填 sk-..."
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button type="button" class="btn-ghost btn-toggle-key" id="toggle-key" aria-label="显示或隐藏密钥">显示</button>
+            </div>
+          </label>
+          <p class="api-hint">优先使用服务器环境变量 <code>DEEPSEEK_API_KEY</code>。仅在本地未配置时，才需要在此填写。Key 只保存在本机浏览器。</p>
+        </details>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>身高 (cm)</span>
+            <input type="number" name="height" min="140" max="200" step="0.1" value="162" required />
+          </label>
+          <label class="field">
+            <span>当前体重 (kg)</span>
+            <input type="number" name="weight" min="35" max="150" step="0.1" value="58" required />
+          </label>
+          <label class="field">
+            <span>年龄</span>
+            <input type="number" name="age" min="18" max="50" value="28" required />
+          </label>
+          <label class="field">
+            <span>孕周</span>
+            <input type="number" name="week" min="1" max="42" value="20" required />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>活动量</span>
+          <select name="activity">
+            <option value="1.2">久坐为主（少运动）</option>
+            <option value="1.375" selected>轻度活动（日常走动）</option>
+            <option value="1.55">中度活动（规律散步/瑜伽）</option>
+          </select>
+        </label>
+
+        <fieldset class="fieldset">
+          <legend>饮食偏好（可多选）</legend>
+          <div class="chips" id="preference-chips">
+            <label class="chip"><input type="checkbox" name="pref" value="少油" />少油</label>
+            <label class="chip"><input type="checkbox" name="pref" value="清淡" checked />清淡</label>
+            <label class="chip"><input type="checkbox" name="pref" value="补铁" />偏重补铁</label>
+            <label class="chip"><input type="checkbox" name="pref" value="补钙" />偏重补钙</label>
+            <label class="chip"><input type="checkbox" name="pref" value="控糖" />控糖</label>
+            <label class="chip"><input type="checkbox" name="pref" value="素食友好" />素食友好</label>
+          </div>
+        </fieldset>
+
+        <label class="field">
+          <span>忌口 / 过敏（可选，逗号分隔）</span>
+          <input type="text" name="avoid" placeholder="例如：海鲜, 牛奶, 花生" />
+        </label>
+
+        <p class="form-error" id="form-error" hidden></p>
+
+        <button type="submit" class="btn-primary" id="generate-btn">
+          <span>AI 一键生成今日食谱</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <section class="panel panel--result" id="result" aria-live="polite" hidden>
+      <div class="result-head">
+        <div>
+          <p class="eyebrow" id="result-eyebrow">DeepSeek 生成</p>
+          <h2 class="panel-title" id="result-title">为你准备的一日食谱</h2>
+          <p class="result-summary" id="result-summary"></p>
+        </div>
+        <button type="button" class="btn-ghost" id="regen-btn">再生成一组</button>
+      </div>
+
+      <div class="stats" id="stats"></div>
+      <div class="meals" id="meals"></div>
+
+      <p class="disclaimer">
+        本工具由 AI 生成，仅供日常参考，不构成医疗建议。特殊体质、妊娠并发症或医嘱饮食请遵从医生/营养师指导。
+      </p>
+    </section>
+
+    <section class="panel panel--empty" id="empty-hint">
+      <div class="empty-visual" aria-hidden="true">
+        <div class="plate"></div>
+        <div class="steam steam--1"></div>
+        <div class="steam steam--2"></div>
+        <div class="steam steam--3"></div>
+      </div>
+      <h2 class="panel-title">食谱将出现在这里</h2>
+      <p class="panel-desc">填好孕期信息后点「AI 一键生成」。部署到 Vercel 后即可用免费域名访问。</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>安孕食谱 · 前后端 · 可部署 Vercel</span>
+    <span>用户数据保存在本机浏览器</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
